@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>side-by-side visual comparison</title>
+    <meta name="description" content="visually compare images side-by-side">
+    <meta name="author" content="Marcel Duran, @marcelduran">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .comp {
+        display: inline-block;
+        margin: 10px;
+        position: relative;
+        vertical-align: top;
+      }
+      .slider {
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+      .ui-slider-handle {
+        background: orangred;
+        border-radius: 4px;
+        position: absolute;
+        z-index: 2;
+      }
+      .horizontal .ui-slider-handle {
+        cursor: ew-resize;
+        height: 100%;
+        margin-left: -2px;
+        width: 4px;
+      }
+      .vertical .ui-slider-handle {
+        cursor: ns-resize;
+        height: 4px;
+        margin-top: -2px;
+        width: 100%;
+      }
+      .comp img {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script>
+      $(function() {
+        var tmpl = '<div class="comp"><div class="slider horizontal"><a class="ui-slider-handle"></a></div><div class="slider vertical"><a class="ui-slider-handle"></a></div><img class="a" src="{{a}}"><img class="b" src="{{b}}"></div>';
+        function clip(idx, values) {
+          var $img = $(this).parent().find('img.b'),
+              width = $img.width(),
+              height = $img.height(),
+              rect = $img.css('clip');
+
+          rect = rect.match(/(\d+)/g) || [0, 0, 0, 0];
+          $img.css('clip', 'rect(' +
+            (idx[0] === 1 ? rect[0] : parseInt(height - (values[1] / 100) * height, 10)) + 'px, ' +
+            (idx[0] === 2 ? rect[1] : parseInt((values[1] / 100) * width, 10)) + 'px, ' +
+            (idx[1] === 3 ? rect[2] : parseInt(height - (values[0] / 100) * height, 10)) + 'px, ' +
+            (idx[1] === 4 ? rect[3] : parseInt((values[0] / 100) * width, 10)) + 'px)');
+        }
+
+        function init() {
+          $('img').each(function(){
+            var $img = $(this);
+            $img.parent('.comp').css({
+              width: $img.width(),
+              height: $img.height()
+            });
+          });
+          $('.comp .slider.horizontal').slider({
+            range: true,
+            values: [50, 100],
+            slide: function(event, ui) {
+              clip.call(this, [1, 3], ui.values);
+            },
+            create: function(event, ui) {
+              clip.call(this, [1, 3], [50, 100]);
+            }
+          });
+          $('.comp .slider.vertical').slider({
+            orientation: 'vertical',
+            range: true,
+            values: [0, 100],
+            slide: function(event, ui) {
+              clip.call(this, [2, 4], ui.values);
+            },
+            create: function(event, ui) {
+              clip.call(this, [2, 4], [0, 100]);
+            }
+          });
+        }
+
+        var loc = location.search.slice(1);
+        if (loc.charAt(loc.length - 1) === '/') {
+          loc = loc.slice(0, loc.length - 1);
+        }
+        var imgs = loc.split('&').map(function(q) {
+          q = q.split('=');
+          if (q[0] === 'i') {
+            return q[1];
+          }
+        });
+
+        for (var i = 0, len = imgs.length; i < len; i += 2) {
+          $('body').append(tmpl
+            .replace('{{a}}', imgs[i])
+            .replace('{{b}}', imgs[i + 1] || imgs[i])
+          );
+        }
+
+        $(window).on('load', function() {
+          init();
+        });
+
+      });
+    </script>
+
+    <script>
+      (function (d, s) {
+        var g = d.createElement(s),
+            h = d.getElementsByTagName(s)[0];
+        g.async = true;
+        g.src = '//www.google-analytics.com/ga.js';
+        _gaq = [['_setAccount', 'UA-3587044-1'], ['_trackPageview']];
+        setTimeout(function () {
+          h.parentNode.insertBefore(g, h);
+        }, 0);
+      }(document, 'script'));
+    </script>
+  </body>
+</html>
