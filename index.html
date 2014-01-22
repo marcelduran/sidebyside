@@ -106,7 +106,7 @@
         var imgs = loc.split('&').map(function(q) {
           q = q.split('=');
           if (q[0] === 'i') {
-            return q[1];
+            return decodeURIComponent(q[1]);
           }
         });
 
